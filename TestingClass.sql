@@ -133,3 +133,43 @@ begin
 
 end
 
+
+-- ****************************************************************
+--- this proc expects a success and failure for custom assert AssertLesserThan
+-- ****************************************************************
+
+
+GO
+if OBJECT_ID('TestingClass.TestSalesTax3' , 'P') is not null
+	drop procedure TestingClass.TestSalesTax3
+GO
+create procedure TestingClass.TestSalesTax3 
+as
+begin
+
+	declare	@OrderId int = 10248
+
+	declare	@TaxAmountProc money,
+			@TaxAmountControl money,
+			@OrderAmount money,
+			@TaxRate decimal(4,2) = 8.25
+
+	select	--OrderID,
+			@OrderAmount = sum((UnitPrice * Quantity) * (1 - Discount)),
+			@TaxAmountProc = Northwind.dbo.GetSalesTax_NW(sum((UnitPrice * Quantity) * (1 - Discount)),@TaxRate)
+	from		Northwind.dbo.[Order Details] 
+	where	OrderID = @OrderID
+	group by	OrderID 
+
+	select @TaxAmountControl = @OrderAmount * @TaxRate + 1 -- failure
+
+	select	@TaxAmountControl as TaxAmountControl, --3631.00
+			@TaxAmountProc as TaxAmountProc --3630.00
+
+
+	-- unit test
+	exec tSQLt.AssertLesserThan @Lesser = @TaxAmountProc, @Greater = @TaxAmountControl;
+	exec tSQLt.AssertLesserThan @Lesser = @TaxAmountControl, @Greater = @TaxAmountProc;
+
+end
+
