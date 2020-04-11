@@ -13,6 +13,12 @@ into		tSQLt.TestResultPersisted
 from		tSQLt.TestResult
 where	1 = 0
 
+GO
+
+alter table tSQLt.TestResultPersisted add TestCaseID int
+
+GO
+
 -- creates the test class for our proc
 exec tSQLt.NewTestClass 'TestingClass'
 
@@ -39,7 +45,8 @@ begin
 			Result,
 			Msg,
 			TestStartTime,
-			TestEndTime
+			TestEndTime,
+			TestCaseID
 	)
 	select	Id,
 			Class,
@@ -47,9 +54,10 @@ begin
 			Name,
 			TranName,
 			Result,
-			Msg,
+			Msg = SUBSTRING(Msg, charindex('|', Msg) + 2, len(Msg)),
 			TestStartTime,
-			TestEndTime
+			TestEndTime,
+			TestCaseID = SUBSTRING(Msg, 0, charindex('|', Msg))
 	from		tSQLt.TestResult
 
 	set identity_insert tSQLt.TestResultPersisted off
@@ -118,3 +126,112 @@ begin
 		truncate table Contacts
 
 end
+
+GO
+create or alter function GetTriangleType
+(
+@Side1 decimal(4,2),
+@Side2 decimal(4,2),
+@Side3 decimal(4,2)
+)
+returns varchar(25)
+as
+begin
+
+	declare @TriangleType varchar(25)
+
+	-- check for valid inputs; reject anything LTE 0
+	if isnull(@Side1, 0) <= 0 OR isnull(@Side2, 0) <= 0 OR isnull(@Side3, 0) <= 0
+	begin
+		select @TriangleType = 'Invalid Sides'
+		return @TriangleType
+	end
+
+	declare @Sides table (Side int, SideLength decimal(4,2))
+
+	insert into @Sides
+	values
+	(1, @Side1),
+	(2, @Side2),
+	(3, @Side3)
+
+	-- determine if the sides can form a valid triangle
+	-- valid defined as the 2 shortest sides added together must be longer than the longest side
+	declare	@LongestSide int,
+			@LongestSideLength decimal(4,2),
+			@Other2SidesTotalLength decimal(4,2)
+
+	select	top 1
+			@LongestSide = Side,
+			@LongestSideLength = SideLength
+	from		@Sides
+	order	by SideLength desc
+
+	select	@Other2SidesTotalLength = sum(SideLength)
+	from		@Sides
+	where	Side <> @LongestSide
+
+	-- first check for valid lengths, then triangle type
+	if @Other2SidesTotalLength <= @LongestSideLength
+	begin
+		select @TriangleType = 'Invalid Lengths'
+		return @TriangleType
+	end
+
+	-- determine what kind of triangle we have
+	else if @Side1 = @Side2 and @Side2 = @Side3
+		select @TriangleType = 'Equilateral'
+	else if  @Side1 = @Side2 OR @Side2 = @Side3 OR @Side1 = @Side3
+		select @TriangleType = 'Isosceles'
+	else
+		select @TriangleType = 'Scalene'
+
+
+	return @TriangleType
+
+end
+
+GO
+
+if object_id('TestCasesGetTriangleType') is not null
+	drop table TestCasesGetTriangleType
+GO
+
+-- put our test cases into a table
+create table TestCasesGetTriangleType (
+ID int identity(1,1),
+TriangleType varchar(25),
+Side1 decimal(4,2),
+Side2 decimal(4,2),
+Side3 decimal(4,2)
+)
+
+insert into TestCasesGetTriangleType
+values
+('Invalid Sides', -1, -1, -1),
+('Invalid Sides', 0, 0, 0),
+('Invalid Sides', -1, 1, 1),
+('Invalid Sides', 1, -1, 1),
+('Invalid Sides', 1, 1, -1),
+('Invalid Sides', 0, 1, 1),
+('Invalid Sides', 1, 0, 1),
+('Invalid Sides', 1, 1, 0),
+
+('Invalid Lengths', 2.01, 1, 1),
+('Invalid Lengths', 1, 2.01, 1),
+('Invalid Lengths', 1, 1, 2.01),
+
+('Equilateral', 1, 1, 1),
+
+('Isosceles', 2, 2, 3),
+('Isosceles', 2, 3, 2),
+('Isosceles', 3, 2, 2),
+
+('Scalene', 3, 4, 5),
+
+('Isosceles', 3, 4, 5) -- invalid test
+
+GO
+
+
+
