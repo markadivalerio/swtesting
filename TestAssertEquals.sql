@@ -1,0 +1,126 @@
+USE tSQLt_Example
+GO
+
+--EXEC tSQLt.NewTestClass 'testAE';
+--GO
+
+CREATE OR ALTER PROCEDURE testAE.[test 01 - Should Pass]
+AS
+BEGIN
+	EXEC tSQLt.AssertEquals 1, 1
+END;
+GO
+
+CREATE OR ALTER PROCEDURE testAE.[test 02 - Should Fail]
+AS
+BEGIN
+	EXEC tSQLt.AssertEquals 2, 1
+END;
+GO
+
+CREATE OR ALTER PROCEDURE testAE.[test 03 - Should Pass]
+AS
+BEGIN
+	EXEC tSQLt.AssertEquals NULL, NULL
+END;
+GO
+
+CREATE OR ALTER PROCEDURE testAE.[test 04 - Should Fail]
+AS
+BEGIN
+	EXEC tSQLt.AssertEquals -1, 1
+END;
+GO
+
+CREATE OR ALTER PROCEDURE testAE.[test 05 - IDK]
+AS
+BEGIN
+	EXEC tSQLt.AssertEquals '1', 1
+END;
+GO
+
+
+CREATE OR ALTER PROCEDURE testAE.[test 06 - Should Fail]
+AS
+BEGIN
+	EXEC tSQLt.AssertEquals 0, NULL
+END;
+GO
+
+CREATE OR ALTER PROCEDURE testAE.[test 07 - Should Fail]
+AS
+BEGIN
+	EXEC tSQLt.AssertEquals 0, ''
+END;
+GO
+
+CREATE OR ALTER PROCEDURE testAE.[test 08 - Should Pass]
+AS
+BEGIN
+	EXEC tSQLt.AssertEquals '', ''
+END;
+GO
+
+CREATE OR ALTER PROCEDURE testAE.[test 09 - Should Fail]
+AS
+BEGIN
+	EXEC tSQLt.AssertEquals '', NULL
+END;
+GO
+
+CREATE OR ALTER PROCEDURE testAE.[test 10 - Should Fail]
+AS
+BEGIN
+	DECLARE @TODAY DATE
+	SET @TODAY = GETDATE();
+	DECLARE @TOMORROW DATE 
+	SET @TOMORROW = DATEADD(day, 1, @TODAY);
+
+	EXEC tSQLt.AssertEquals @TODAY, @TOMORROW
+END;
+GO
+
+CREATE OR ALTER PROCEDURE testAE.[test 11 - Should Pass]
+AS
+BEGIN
+	DECLARE @TODAY DATE
+	SET @TODAY = GETDATE();
+	DECLARE @TODAY2 DATE 
+	SET @TODAY2 = CAST(CONVERT(NVARCHAR, @TODAY, 23) AS DATE);
+
+	EXEC tSQLt.AssertEquals @TODAY, @TODAY2
+END;
+GO
+
+CREATE OR ALTER PROCEDURE testAE.[test 12 - Pass]
+AS
+BEGIN
+	DECLARE @Param1 TINYINT
+	SET @Param1 = 8;
+	DECLARE @Param2 BIGINT
+	SET @Param2 = 8;
+	EXEC tSQLt.AssertEquals @Param1, @Param2
+END;
+GO
+
+CREATE OR ALTER PROCEDURE testAE.[test 13 - Pass]
+AS
+BEGIN
+	DECLARE @Param1 NVARCHAR(MAX)
+	SET @Param1 = 'abc';
+	DECLARE @Param2 NVARCHAR(MAX)
+	SET @Param2 = 'ABC';
+	EXEC tSQLt.AssertEquals @Param1, @Param2
+END;
+GO
+
+
+CREATE OR ALTER PROCEDURE testAE.[test 14 - Fail]
+AS
+BEGIN
+	EXEC tSQLt.AssertEquals 'abc', 'ABC'
+END;
+GO
+
+
+EXEC tSQLt.Run 'testAE';

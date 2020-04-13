@@ -1,0 +1,69 @@
+USE tSQLt_Example
+GO
+
+--EXEC tSQLt.NewTestClass 'testAES';
+--GO
+
+CREATE OR ALTER PROCEDURE testAES.[test 01 - Should Pass]
+AS
+BEGIN
+	EXEC tSQLt.AssertEqualsString 'ABC',	'ABC'
+END;
+GO
+
+CREATE OR ALTER PROCEDURE testAES.[test 02 - Should Fail]
+AS
+BEGIN
+	EXEC tSQLt.AssertEqualsString NULL,		'ABC'
+END;
+GO
+
+CREATE OR ALTER PROCEDURE testAES.[test 03 - Should Fail]
+AS
+BEGIN
+	EXEC tSQLt.AssertEqualsString 'ABC',	NULL
+END;
+GO
+
+CREATE OR ALTER PROCEDURE testAES.[test 04 - Should Fail]
+AS
+BEGIN
+	EXEC tSQLt.AssertEqualsString NULL,		NULL
+END;
+GO
+
+CREATE OR ALTER PROCEDURE testAES.[test 05 - Should Fail] -- WHAT THIS PASSES?? case insensitive
+AS
+BEGIN
+	EXEC tSQLt.AssertEqualsString 'abc',	'ABC'
+END;
+GO
+
+
+CREATE OR ALTER PROCEDURE testAES.[test 06 - IDK]
+AS
+BEGIN
+	EXEC tSQLt.AssertEqualsString 123,		'123'
+END;
+GO
+
+CREATE OR ALTER PROCEDURE testAES.[test 07 - IDK]
+AS
+BEGIN
+	DECLARE @TODAY DATE
+	SET @TODAY = GETDATE();
+	DECLARE @TODAYSTR NVARCHAR(MAX)
+	SET @TODAYSTR = CONVERT(NVARCHAR, @TODAY, 23);
+
+	EXEC tSQLt.AssertEqualsString @TODAY, @TODAYSTR
+END;
+GO
+
+CREATE OR ALTER PROCEDURE testAES.[test 08 - Should Pass]
+AS
+BEGIN
+	EXEC tSQLt.AssertEqualsString '',	'',	'(8) SUPPOSED TO PASS!!!'
+END;
+GO
+
+EXEC tSQLt.Run 'testAES';
