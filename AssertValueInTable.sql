@@ -32,7 +32,7 @@ BEGIN
   DECLARE @exists INT;
  -- SET @cmd = 'SELECT @exists = CASE WHEN EXISTS(SELECT 1 FROM '+@FullName+') THEN 1 ELSE 0 END;'
  set @cmd='select @exists = case when exists (select 1 from '+@FullName+' where '+@ColumnName+' = '+cast(@ValueToCheck as nvarchar(max))+') then 1 else 0 end;'
-  EXEC sp_executesql @cmd,N'@exists INT OUTPUT', @exists OUTPUT;
+  EXEC sp_executesql @cmd,N'@exists INT OUTPUT', @exists ;
 
     
   IF(@exists <> 1)
