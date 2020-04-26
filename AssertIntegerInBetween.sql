@@ -13,7 +13,7 @@ Create OR ALTER   PROCEDURE [tSQLt].[AssertIntegerInBetween]
   @Message NVARCHAR(MAX) = ''
 AS
 BEGIN
-Declare @ErrorMessage varchar(max)
+ 
 
 if(@LowerRange<=@InputValue and @HeigherRange>=@InputValue)
 begin
@@ -21,8 +21,8 @@ return 0;
 end
 else
 begin
-set @ErrorMessage=':'+CAST(@InputValue AS NVARCHAR(MAX)) + ' is not in between '+CAST(@LowerRange AS NVARCHAR(MAX)) +' and '+CAST(@HeigherRange AS NVARCHAR(MAX));
-  EXEC tSQLt.Fail @Message, @ErrorMessage;
+declare  @ErrorMessage varchar(150)=':'+CAST(@InputValue AS NVARCHAR(MAX)) + ' is not in range'
+RAISERROR (@ErrorMessage, 16, 10)
 end;
   
 END;
